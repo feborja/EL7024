@@ -10,17 +10,17 @@ Made by Ammi Beltrán, Fernanda Borja & Luciano Vidal
 '''
 # Label Related
 def random_labels(train_data, prob):
-    data, labels = train_data
-    unique, count = torch.unique(labels)
-    for i in range(labels.shape):
+    # data, labels = train_data
+    # unique, count = torch.unique(labels)
+    for i in range(len(train_data)):
+        data, label = train_data[i]
         luck = torch.rand(1)
         if (luck < prob):
-            original = labels[i]
-            replace = labels[i]
+            original = label
+            replace = label
             while(original == replace):
-                replace = unique[np.random.randint(count)]
-                labels[i] = replace
-    return data, labels
+                replace = np.random.randint(10)
+                train_data.targets[i] = replace
 
 # Image related
 '''
@@ -68,4 +68,13 @@ def gaussian_pixels(img):
 '''
 Use after dataset creation
 '''
-# Lineal recomp
+# Lineal combination
+# [between two images for now]
+def lineal_imgs(train_data, alpha):
+    # get random idxs to permutate 
+    idxs = torch.randperm(len(train_data))
+    memory = train_data.data.copy()
+    for i in range(len(idxs)):
+        data, label = train_data[i]
+        train_data.data[i] = memory[i]*alpha + train_data.data[idxs[i]]*(1 - alpha)
+
