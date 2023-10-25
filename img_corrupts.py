@@ -60,7 +60,8 @@ def gaussian_pixels(img):
     for i, ch in enumerate(img):
         stats[i][0] = torch.mean(ch, axis = 0)
         stats[i][1] = torch.var(ch, axis = 0)
-        x = np.random.normal(loc=stats[i][0].item(), scale=stats[i][1].item(), size=img.shape[1])
+        x = np.random.default_rng(seed=69).normal(loc=stats[i][0].item(), scale=stats[i][1].item(), size=img.shape[1])
+        # x = np.random.normal(loc=stats[i][0].item(), scale=stats[i][1].item(), size=img.shape[1])
         img[i] = torch.from_numpy(x)
     img = torch.reshape(img, (3, 32, 32))
     return img
