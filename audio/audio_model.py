@@ -63,6 +63,7 @@ class AudioModel(nn.Module):
         )
         self.fc = nn.Sequential(
             nn.AdaptiveAvgPool2d(output_size = 1),
+            nn.Flatten(),
             nn.Linear(in_features = 64, out_features = 10),
         )
 
@@ -89,52 +90,77 @@ Training
 '''
 def get_loss(model, batch, criterion, device = "cuda"):
     x, y = batch
+    # print(y)
     model.train()
     model = model.to(device)
     x, y = x.to(device), y.to(device)
     y_pred = model(x)
+    zeros = torch.zeros_like(y_pred)
+    for i, pred in enumerate(y):
+        zeros[i, pred] = 1
     # Check if return value is labels lenght or a single number
     # Assuming the first:
-    y_pred = torch.argmax(y_pred, dim = 0).to(device)
-    loss = criterion(y_pred, y)
+    # y_pred = torch.argmax(y_pred, dim = 0).to(device)
+    loss = criterion(y_pred, zeros)
+    del x, zeros
+    torch.cuda.empty_cache()
     return loss, y, y_pred
 
 def train_epoch(model, train_dataset, criterion, optimizer, device = "cuda"):
     acc = 0
     t_loss = 0
     count = 0
+    total_prediction = 0
     for i, batch in enumerate(train_dataset):
         loss, y, y_pred = get_loss(model, batch, criterion, device)
         #
         optimizer.zero_grad()
-        loss.requires_grad = True
+        # loss.requires_grad = True
         loss.backward()
         optimizer.step()
         #
         t_loss +=loss
-        acc +=(y == y_pred)
-        count +=1
+        # print(y)
+        # print(y_pred)
+        _, prediction = torch.max(y_pred, 1)
+        acc +=(y == prediction).sum().item()
+        # count +=1
+        total_prediction += prediction.shape[0]
         print(f"Iter: {i + 1}/{len(train_dataset)}, Loss:{loss}")
-    acc = acc/count
-    t_loss = t_loss/count
+        #
+        del batch, loss
+        torch.cuda.empty_cache()
+    num_batches = len(train_dataset)
+    # acc = acc/count
+    acc = acc/total_prediction
+    # t_loss = t_loss/count
+    t_loss = t_loss/num_batches
     return t_loss, acc
 
 def validate(model, val_dataset, criterion, device = "cuda"):
     acc = 0
     v_loss = 0
     count = 0
+    total_prediction = 0
     model.eval()
     with torch.no_grad():
         for i, batch in enumerate(val_dataset):
             loss, y, y_pred = get_loss(model, batch, criterion, device)
             v_loss +=loss
-            acc+=(y==y_pred)
-            count +=1
-        acc = acc/count
-        v_loss = v_loss/count
+            _, prediction = torch.max(y_pred, 1)
+            acc +=(y == prediction).sum().item()
+            total_prediction += prediction.shape[0]
+            del loss, batch
+            torch.cuda.empty_cache()
+
+        num_batches = len(val_dataset)
+        # acc = acc/count
+        acc = acc/total_prediction
+        # t_loss = t_loss/count
+        v_loss = v_loss/num_batches
     return v_loss, acc
 
-def train(model, epochs, train_dataset, val_dataset, criterion, optimizer, save_each = 2, state = None, name = "", device = "cuda"):
+def train(model, epochs, train_dataset, val_dataset, criterion, optimizer, state = None, name = "", dir = "", device = "cuda"):
     # If not trained before
     if state == None:
         state = {
@@ -163,13 +189,7 @@ def train(model, epochs, train_dataset, val_dataset, criterion, optimizer, save_
         if v_loss < best_loss:
             best_loss = v_loss
             print(f"Better params found in epoch = {epoch + 1}, saved params")
-            torch.save(model.state_dict(), f'bestParams{name}.pt')
-        # Load best model so far to proceed
-        # model.load_state_dict(torch.load(f'bestDownParams.pt'))
-        # Save periodically for each
-        if ((epoch + 1)%save_each == 0):
-            print(f"Se ha guardado la época múltiplo de {save_each}")
-            torch.save(model.state_dict(), f'eachDownParams{name}_{epoch + 1}.pt')
+            torch.save(model.state_dict(), os.path.join(dir, f'bestParams{name}.pt'))
         # Update state
         state["loss"][0].append(t_loss)
         state["loss"][1].append(v_loss)
@@ -179,5 +199,5 @@ def train(model, epochs, train_dataset, val_dataset, criterion, optimizer, save_
         state["params"] = model.state_dict()
         state["bestloss"] = best_loss
         # Save last just in case, [includes loss!!!!]
-        torch.save(state, f"LastDown{name}_{epoch + 1}.pt")
-        return state["loss"], state["acc"]
+        torch.save(state, os.path.join(dir, f"{name}_{epoch + 1}.pt"))
+    return state["loss"], state["acc"]

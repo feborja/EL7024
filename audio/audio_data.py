@@ -119,6 +119,7 @@ class SoundDS(Dataset):
     audio_file = self.data_path + self.df.loc[idx, 'relative_path']
     # Get the Class ID
     class_id = self.df.loc[idx, 'classID']
+    
 
     aud = AudioUtil.open(audio_file)
     # Some sounds have a higher sample rate, or fewer channels compared to the
