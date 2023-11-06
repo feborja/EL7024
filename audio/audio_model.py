@@ -177,7 +177,7 @@ def train(model, epochs, train_dataset, val_dataset, criterion, optimizer, state
     #
     best_loss = state["bestloss"]
     # Begin iterating
-    for epoch in range(0, epochs):
+    for epoch in range(state["epoch"], epochs):
         # Train
         print(f"Epoch nro {epoch +1}/{epochs}")
         t_loss, t_acc = train_epoch(model, train_dataset, criterion, optimizer, device)

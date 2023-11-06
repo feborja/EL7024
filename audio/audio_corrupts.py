@@ -21,14 +21,17 @@ def filter_audio(signal, Fs = 44100, central_freq=500, Q=10):
 
 
 def silent_audio(signal, window_num = 10, prob = 0.5):
-    signal_window = signal.reshape((window_num, -1)).copy()
-
-    for i, _ in enumerate(signal_window):
-        luck = np.random.rand(1).item()
-        if luck < prob:
-            signal_window[i] = np.zeros_like(signal_window[i])
-    output = signal_window.reshape(len(signal))
-    return output
+    sig, sr = signal
+    signal_window = sig.clone().reshape((2, window_num, -1))
+    for wnd in signal_window:
+        for i, _ in enumerate(wnd):
+            luck = np.random.rand(1).item()
+            if luck < prob:
+                wnd[i] = torch.zeros_like(wnd[i])
+    # print(sig.shape)
+    # print(signal_window.shape)
+    output = signal_window.reshape((2, sig.shape[1]))
+    return output, sr
 
 
 def random_audio_permute(signal):

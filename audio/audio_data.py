@@ -5,11 +5,13 @@ Based on: https://towardsdatascience.com/audio-deep-learning-made-simple-sound-c
 Made by Ammi Beltrán, Fernanda Borja & Luciano Vidal
 """
 import math, random
+import numpy as np
 import torch
 import torchaudio
 from torchaudio import transforms
 from IPython.display import Audio
 from torch.utils.data import DataLoader, Dataset, random_split
+import audio.audio_corrupts as corrupt
 import torchaudio
 
 # Load an audio file. Return the signal as a tensor and the sample rate
@@ -100,13 +102,14 @@ class AudioUtil():
 Sound Dataset
 """
 class SoundDS(Dataset):
-  def __init__(self, df, data_path):
+  def __init__(self, df, data_path, transform = True):
     self.df = df
     self.data_path = str(data_path)
     self.duration = 4000
     self.sr = 44100
     self.channel = 2
     self.shift_pct = 0.4
+    self.transform = transform
             
   # Number of items in dataset
   def __len__(self):
@@ -131,8 +134,14 @@ class SoundDS(Dataset):
     rechan = AudioUtil.rechannel(reaud, self.channel)
 
     dur_aud = AudioUtil.pad_trunc(rechan, self.duration)
+    if self.transform:
+        luck = np.random.rand(1).item()
+        if luck < 0.4:
+            dur_aud = corrupt.silent_audio(dur_aud)
     # shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
+    # augm_aud = corrupt.silent_audio(dur_aud)
     sgram = AudioUtil.spectro_gram(dur_aud, n_mels=64, n_fft=1024, hop_len=None)
     # aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
 
     return sgram, class_id
+  
