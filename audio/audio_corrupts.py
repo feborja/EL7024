@@ -47,15 +47,15 @@ def random_audio_permute(signal):
     sig, sr = signal
     for i, side in enumerate(sig):
         window_len= int(len(side)/4)
-        signal_slice = signal[:(4*window_len)].copy()
+        signal_slice = side[:(4*window_len)].clone()
         signal_slice = signal_slice.reshape((4, -1))
 
         order = np.linspace(0,3,4, dtype='int')
         np.random.shuffle(order)
 
-        signal_copy = np.zeros_like(signal_slice)
-        for i, idx in enumerate(order):
-            signal_copy[i] = signal_slice[idx]
-        output = signal_copy.reshape(len(signal))
+        signal_copy = torch.zeros_like(signal_slice)
+        for j, idx in enumerate(order):
+            signal_copy[j] = signal_slice[idx]
+        output = signal_copy.reshape(len(side))
         sig[i] = output
     return sig, sr

@@ -77,11 +77,13 @@ Use after dataset creation
 '''
 # Lineal combination
 # [between two images for now]
-def lineal_imgs(train_data, alpha):
+def lineal_imgs(train_data, alpha, prob = 0.4):
     # get random idxs to permutate 
-    idxs = torch.randperm(len(train_data))
+    idxs = torch.randperm(len(train_data), generator=torch.manual_seed(4321))
     memory = train_data.data.copy()
     for i in range(len(idxs)):
-        data, label = train_data[i]
-        train_data.data[i] = memory[i]*alpha + train_data.data[idxs[i]]*(1 - alpha)
+        luck = torch.rand(1)
+        if (luck < prob):
+            data, label = train_data[i]
+            train_data.data[i] = memory[i]*alpha + train_data.data[idxs[i]]*(1 - alpha)
 
