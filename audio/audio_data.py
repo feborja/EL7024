@@ -137,7 +137,7 @@ class SoundDS(Dataset):
     if self.transform:
         luck = np.random.rand(1).item()
         if luck < 0.4:
-            dur_aud = corrupt.silent_audio(dur_aud)
+            dur_aud = corrupt.gaussian_audio(dur_aud)
     # shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
     # augm_aud = corrupt.silent_audio(dur_aud)
     sgram = AudioUtil.spectro_gram(dur_aud, n_mels=64, n_fft=1024, hop_len=None)

@@ -5,25 +5,20 @@ import torch
 def gaussian_audio(signal, std = 0.02):
     #
     sig, sr = signal
-    for i, side in enumerate(sig):
-        size = sig.shape
-        noise = np.random.normal(loc=0.0, 
-                            scale=std, 
-                            size=size)
-        output = sig + noise
-        sig[i] = output
-    return sig, sr
+    noise = torch.normal(mean = 0.0, std = std, size = sig.shape)
+    output = noise + sig
+    return output, sr
 
 
-def filter_audio(signal, Fs = 44100, central_freq=500, Q=10):
+def filter_audio(signal, central_freq=500, Q=10):
     #
     sig, sr = signal
     # signal_torch = torch.from_numpy(sig)
     for i, side in enumerate(sig):
         output = torchaudio.functional.bandpass_biquad(side, 
-                                                    Fs,
+                                                    sr,
                                                     central_freq, 
-                                                    Q).numpy()
+                                                    Q)
         sig[i] = output
     return sig, sr
 
@@ -44,6 +39,7 @@ def silent_audio(signal, window_num = 10, prob = 0.5):
 
 
 def random_audio_permute(signal):
+    #
     sig, sr = signal
     for i, side in enumerate(sig):
         window_len= int(len(side)/4)
