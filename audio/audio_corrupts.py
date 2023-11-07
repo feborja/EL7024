@@ -14,13 +14,13 @@ def filter_audio(signal, central_freq=500, Q=10):
     #
     sig, sr = signal
     # signal_torch = torch.from_numpy(sig)
-    for i, side in enumerate(sig):
-        output = torchaudio.functional.bandpass_biquad(side, 
-                                                    sr,
-                                                    central_freq, 
-                                                    Q)
-        sig[i] = output
-    return sig, sr
+    # for i, side in enumerate(sig):
+    output = torchaudio.functional.bandpass_biquad(sig, 
+                                                sr,
+                                                central_freq, 
+                                                Q)
+        # sig[i] = output
+    return output, sr
 
 
 def silent_audio(signal, window_num = 10, prob = 0.5):
