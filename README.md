@@ -15,3 +15,6 @@ Este repositorio posee todos los bloques de codigo necesarios para entrenar rede
 Los parámetros de audio se encuentran en audio_params de forma comprimida, de ser necesario se deben descomprimir.
 
 Los parámetros de imagenes se encuentran [aquí](https://drive.google.com/drive/folders/1Z-6cn6ZPKIJFL83lxCQgFRx05dqf7jSU?usp=sharing) para descargar, en donde los parámetros para realizar los plots se encuentran en el zip VGGstate_params.zip
+
+***
+Todo lo de Information Plane se encuentra documentado en otro README inserto en la carpeta
