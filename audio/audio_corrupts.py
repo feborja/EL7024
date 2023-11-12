@@ -2,15 +2,15 @@ import numpy as np
 import torchaudio
 import torch
 
-def gaussian_audio(signal, std = 0.02):
+def gaussian_audio(signal, std = 0.02, idx = 0):
     #
     sig, sr = signal
-    noise = torch.normal(mean = 0.0, std = std, size = sig.shape)
+    noise = torch.normal(mean = 0.0, std = std, size = sig.shape, generator = torch.Generator().manual_seed(int(idx * 1000000)))
     output = noise + sig
     return output, sr
 
 
-def filter_audio(signal, central_freq=500, Q=10):
+def filter_audio(signal, central_freq=500, Q=10, idx = 0):
     #
     sig, sr = signal
     # signal_torch = torch.from_numpy(sig)
@@ -23,32 +23,37 @@ def filter_audio(signal, central_freq=500, Q=10):
     return output, sr
 
 
-def silent_audio(signal, window_num = 10, prob = 0.5):
+def silent_audio(signal, window_num = 5, prob = 0.5, idx = 0):
     #
     sig, sr = signal
-    signal_window = sig.clone().reshape((2, window_num, -1))
-    for wnd in signal_window:
-        for i, _ in enumerate(wnd):
-            luck = np.random.rand(1).item()
-            if luck < prob:
-                wnd[i] = torch.zeros_like(wnd[i])
-    # print(sig.shape)
-    # print(signal_window.shape)
-    output = signal_window.reshape((2, sig.shape[1]))
-    return output, sr
+    #
+    if not (0 <= prob <= 1):
+        raise ValueError("Probability should be between 0 and 1")
+    # Calculate the number of samples per window
+    samples_per_window = sig.shape[1] // window_num
+    lucks = torch.rand(size = (window_num,), generator = torch.Generator().manual_seed(int(idx * 1000000)))
+    for i in range(window_num):
+        luck = lucks[i].item()
+        if luck < prob:
+            start = i * samples_per_window
+            end = (i + 1) * samples_per_window
+            sig[:, start:end] = 0
+
+    return sig, sr
 
 
-def random_audio_permute(signal):
+def random_audio_permute(signal, idx = 0):
     #
     sig, sr = signal
     for i, side in enumerate(sig):
         window_len= int(len(side)/4)
         signal_slice = side[:(4*window_len)].clone()
         signal_slice = signal_slice.reshape((4, -1))
-
+        #
+        rng = np.random.default_rng(int(idx * 1000000))
         order = np.linspace(0,3,4, dtype='int')
-        np.random.shuffle(order)
-
+        rng.shuffle(order)
+        #
         signal_copy = torch.zeros_like(signal_slice)
         for j, idx in enumerate(order):
             signal_copy[j] = signal_slice[idx]

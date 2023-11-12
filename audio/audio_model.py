@@ -112,6 +112,7 @@ def train_epoch(model, train_dataset, criterion, optimizer, device = "cuda"):
     count = 0
     total_prediction = 0
     for i, batch in enumerate(train_dataset):
+        # print(f"Batch {i}, batch[0][0][0][0] = {batch[0][0][0][0]}")
         loss, y, y_pred = get_loss(model, batch, criterion, device)
         #
         optimizer.zero_grad()
@@ -178,6 +179,8 @@ def train(model, epochs, train_dataset, val_dataset, criterion, optimizer, state
     best_loss = state["bestloss"]
     # Begin iterating
     for epoch in range(state["epoch"], epochs):
+        # torch.manual_seed(0)
+        # np.random.seed(0)
         # Train
         print(f"Epoch nro {epoch +1}/{epochs}")
         t_loss, t_acc = train_epoch(model, train_dataset, criterion, optimizer, device)
