@@ -2,7 +2,7 @@ import numpy as np
 import torchaudio
 import torch
 
-def gaussian_audio(signal, std = 0.02, idx = 0):
+def gaussian_audio(signal, std = 0.05, idx = 0):
     #
     sig, sr = signal
     noise = torch.normal(mean = 0.0, std = std, size = sig.shape, generator = torch.Generator().manual_seed(int(idx * 1000000)))

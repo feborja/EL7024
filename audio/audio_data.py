@@ -135,11 +135,11 @@ class SoundDS(Dataset):
 
     dur_aud = AudioUtil.pad_trunc(rechan, self.duration)
     if self.transform:
-        pass
+        # pass
         luck = self.df.loc[idx, 'corrupt']
         if luck < 0.4:
-            pass
-            # dur_aud = corrupt.silent_audio(dur_aud, idx = luck)
+            # pass
+            dur_aud = corrupt.filter_audio(dur_aud, idx = luck)
     # shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
     # augm_aud = corrupt.silent_audio(dur_aud)
     sgram = AudioUtil.spectro_gram(dur_aud, n_mels=64, n_fft=1024, hop_len=None)
