@@ -33,13 +33,13 @@ def init_weights(model):
         model.bias.data.zero_()
 
 '''
-Model
+Models
 '''
-# Model Class
-
-class AudioModel(nn.Module):
+# Old Model Class
+# Made for stereo!!!
+class OldAudioModel(nn.Module):
     def __init__(self):
-        super(AudioModel, self).__init__()
+        super(OldAudioModel, self).__init__()
         # def layers
         self.conv1 = nn.Sequential(
             nn.Conv2d(2, 8, kernel_size= (5, 5), stride = (2, 2), padding = (2, 2)),
@@ -84,7 +84,42 @@ class AudioModel(nn.Module):
         for i in range(len(self.layers)):
             out = self.layers[i](out)
         return out
+
+# New simpler Audio Model, only MLP's and the size equals the batch size  
+
+class AudioModel(nn.Module):
+    def __init__(self, input_size = 22016, hidden_size = 512, output_size = 10):
+        super(AudioModel, self).__init__() 
+    # def layers
+        self.layer1 = nn.Sequential(
+            nn.Linear(in_features = input_size, out_features = hidden_size),
+            nn.ReLU(),
+        )
+        self.layer2 = nn.Sequential(
+            nn.Linear(in_features = hidden_size, out_features = hidden_size),
+            nn.ReLU(),
+        )
+        self.layer3 = nn.Sequential(
+            nn.Linear(in_features = hidden_size, out_features = output_size),
+        )
+
+        self.layers = [self.layer1, self.layer2, self.layer3]
+        # Init weights
+        for layer in self.layers:
+            layer.apply(init_weights)
+
+    def encode(self, x, depth = 3):
+        out = x
+        for i in range(depth):
+            out = self.layers[i](out)
+        return out
     
+    def forward(self, x):
+        # Pass through all layers
+        out = x
+        for i in range(len(self.layers)):
+            out = self.layers[i](out)
+        return out
 '''
 Training
 '''
@@ -96,6 +131,7 @@ def get_loss(model, batch, criterion, device = "cuda"):
     x, y = x.to(device), y.to(device)
     y_pred = model(x)
     zeros = torch.zeros_like(y_pred)
+    # print(zeros.size())
     for i, pred in enumerate(y):
         zeros[i, pred] = 1
     # Check if return value is labels lenght or a single number
