@@ -3,3 +3,5 @@ data/
 train_params/
 ewe.ipynb
 test/
+vgg_params/
+img_mutualinf/
