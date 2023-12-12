@@ -5,3 +5,8 @@ ewe.ipynb
 test/
 vgg_params/
 audio_params/
+audio_params/silent_params.zip
+audio_params/permute.zip
+audio_params/gaussian.zip
+audio_params/filter.zip
+audio_params/clean_params.zip
